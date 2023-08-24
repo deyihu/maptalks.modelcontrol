@@ -2,7 +2,7 @@
   "name": "maptalks.modelcontrol",
   "version": "0.1.0",
   "description": "model control",
-  "main": "dist/colorin.js",
+  "main": "dist/maptalks.modelcontrol.js",
   "module": "./index.js",
   "scripts": {
     "lint": "eslint ./*.js",
@@ -11,18 +11,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/maptalks/colorin.git"
+    "url": "git+https://github.com/deyihu/maptalks.modelcontrol.git"
   },
   "author": "deyihu",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/maptalks/colorin/issues"
+    "url": "https://github.com/deyihu/maptalks.modelcontrol.git/issues"
   },
-  "homepage": "https://github.com/maptalks/colorin#readme",
+  "homepage": "https://github.com/deyihu/maptalks.modelcontrol.git#readme",
   "dependencies": {
-    "maptalks": "1.0.0-rc.25"
   },
   "devDependencies": {
+    "maptalks": "1.0.0-rc.25",
     "cross-env": "^5.1.4",
     "eslint": "^6.2.2",
     "eslint-config-standard": "^14.1.0",

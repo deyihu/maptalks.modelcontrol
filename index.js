@@ -4,7 +4,6 @@ const options = {
     lineSymbol: {
         lineColor: '#fff'
     },
-    lineColor: '#fff',
     scaleColor: 'red',
     rotateColor: 'blue',
     translateColor: 'green',
