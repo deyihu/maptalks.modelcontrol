@@ -1,7 +1,7 @@
 {
   "name": "maptalks.modelcontrol",
   "version": "0.1.0",
-  "description": "model control",
+  "description": "maptalks model control",
   "main": "dist/maptalks.modelcontrol.js",
   "module": "./index.js",
   "scripts": {
@@ -21,6 +21,10 @@
   "homepage": "https://github.com/deyihu/maptalks.modelcontrol.git#readme",
   "dependencies": {
   },
+  "files": [
+    "dist/",
+    "index.js"
+  ],
   "devDependencies": {
     "maptalks": "1.0.0-rc.25",
     "cross-env": "^5.1.4",
