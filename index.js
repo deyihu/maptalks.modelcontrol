@@ -369,7 +369,16 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
             line.addTo(layer);
         }
         if (operateModel === TRANSLATE) {
-            const c = e.coordinate.copy();
+
+            // eslint-disable-next-line no-unused-vars
+            const [c1, c2, p1, p2] = getPoints();
+
+            const p1groupd = map.coordinateToContainerPoint(c1);
+            const dxdy = p1.sub(p1groupd.x, p1groupd.y);
+
+            const p = p2.sub(dxdy.x, dxdy.y);
+            const c = map.containerPointToCoord(p);
+            // const c = e.coordinate.copy();
             c.z = height;
             marker.setCoordinates(c);
             this.layer.clear();
@@ -379,11 +388,14 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
             // eslint-disable-next-line no-unused-vars
             const [c1, c2, p1, p2] = getPoints();
             const distance = p2.distanceTo(p1);
-            const scale = (distance / (panelSize / 2) - 1);
+            // const maxZoom = map.getMaxZoom();
+            // const factor = maxZoom / 2 / map.getZoom();
+            const factor = map.getScale() / 100;
+            const scale = (distance / (panelSize / 2) - 1) * factor;
             // if (scale < 0) {
             //     scale *= 2;
             // }
-            const modelScale = orginScale + scale;
+            const modelScale = Math.max(0.00001, orginScale + scale);
             this._setMarkerSize(panelSize * (distance * 2 / panelSize));
             c2.z = -height;
             layer.options.altitude = height;

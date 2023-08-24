@@ -52,6 +52,7 @@
             centerCross: true,
             doubleClickZoom: false,
             baseLayer: new maptalks.TileLayer('tile', {
+                maxAvailableZoom: 17,
                 urlTemplate:
                     'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
                 subdomains: ['a', 'b', 'c', 'd'],
