@@ -1,6 +1,11 @@
 # maptalks.modelcontrol
 
-maptalks model control
+maptalks model control .
+## support geometry:
+- GLTFMarker  
+![](./images/1.png)  
+- ThreeLayer toModel (Model)  
+![](./images/2.png)
 
 ## Install
 
