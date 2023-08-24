@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<meta charset='UTF-8' />
+<meta name='viewport' content='width=device-width, initial-scale=1' />
+<title>TransformControl - 控制模型的平移、旋转、缩放</title>
+<style type='text/css'>
+    html,
+    body {
+        width: 100%;
+        height: 100%;
+        margin: 0px;
+    }
+
+    .container {
+        width: 100%;
+        height: 100%;
+    }
+
+    .control-message {
+        background-color: black;
+        color: white;
+        padding: 4px;
+        display: block;
+        white-space: nowrap;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+
+    }
+</style>
+<script type="text/javascript" src="https://unpkg.com/dat.gui@0.7.6/build/dat.gui.min.js"></script>
+<link rel='stylesheet' href='https://maptalks.com/api/maptalks.css' />
+<script type='text/javascript' src='https://maptalks.com/api/maptalks.min.js'></script>
+<script type='text/javascript' src='https://maptalks.com/api/maptalks-gl-layers.js'></script>
+<script type="text/javascript" src="../dist/maptalks.modelcontrol.js"></script>
+
+<body>
+    <div id="map" class="container"></div>
+    <script>
+        const map = new maptalks.Map("map", {
+            center: [120.72401521, 31.05590736],
+            zoom: 16,
+            pitch: 60,
+            lights: {
+                ambient: {
+                    // resource: {
+                    //     url: {
+                    //         front: "/resources/hdr/gradient/front.png",
+                    //         back: "/resources/hdr/gradient/back.png",
+                    //         left: "/resources/hdr/gradient/left.png",
+                    //         right: "/resources/hdr/gradient/right.png",
+                    //         top: "/resources/hdr/gradient/top.png",
+                    //         bottom: "/resources/hdr/gradient/bottom.png",
+                    //     },
+                    //     prefilterCubeSize: 32
+                    // },
+                    exposure: 1,
+                    hsv: [0, 1, -0.042],
+                    orientation: 0,
+                },
+                directional: {
+                    direction: [-0.1, 1, -1],
+                    color: [1, 1, 1],
+                },
+            },
+            baseLayer: new maptalks.TileLayer('tile', {
+                urlTemplate:
+                    'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                subdomains: ['a', 'b', 'c', 'd'],
+                attribution: '&copy; <a href="https://www.esri.com/en-us/home">esri</a>'
+            })
+        });
+
+        /**start**/
+        const symbol = {
+            url: "./data/alien.gltf",
+            modelHeight: 480,
+            rotationZ: 180,
+        };
+
+        const gltfLayer = new maptalks.GLTFLayer("gltf");
+        const gltfMarker = new maptalks.GLTFMarker(map.getCenter(), {
+            symbol,
+        });
+        gltfLayer.addGeometry(gltfMarker);
+
+
+        const modelcontrol = new maptalks.ModelControl(map, {
+            panelSize: 400
+        });
+
+        const marker = new maptalks.ui.UIMarker([0, 0], {
+            content: 'hello',
+            dy: -40
+        });
+
+        function showTip(e) {
+            const { coordinate, type } = e;
+            if (!coordinate) {
+                marker.remove();
+                return;
+            }
+            let message = '';
+            if (type === 'translate_in') {
+                message = '平移';
+            } else if (type === 'scale_in') {
+                message = '缩放';
+            } else if (type === 'rotation_in') {
+                message = '旋转';
+            } else if (type === 'height_in') {
+                message = '调整高度'
+            }
+            const content = `你可以对模型进行${message}`;
+            marker.setContent(`<div class="control-message">${content}</div>`);
+            if (!marker.getMap()) {
+                marker.addTo(map);
+            }
+            marker.setCoordinates(coordinate);
+        }
+
+        modelcontrol.on('translate_in scale_in rotation_in height_in', showTip);
+        modelcontrol.on('translate_out scale_out rotation_out height_out', () => {
+            marker.remove();
+        });
+        modelcontrol.on('translate scale rotation height', e => {
+            const { type } = e;
+            marker.remove();
+            if (type === 'translate') {
+                console.log(e.coordinate);
+                gltfMarker.setCoordinates(e.coordinate);
+            }
+            if (type === 'scale') {
+                const scale = e.scale;
+                gltfMarker.setScale(scale, scale, scale)
+            }
+            if (type === 'rotation') {
+                const rotation = e.rotation;
+                gltfMarker.setRotation(0, 0, rotation + 180);
+            }
+            if (type === 'height') {
+                const coordinate = gltfMarker.getCoordinates();
+                coordinate.z = e.height;
+                gltfMarker.setCoordinates(coordinate);
+
+
+            }
+        })
+
+        modelcontrol.setModel(gltfMarker);
+        modelcontrol.setOriginalScale(gltfMarker.getScale()[0]);
+
+
+
+
+        const groupLayer = new maptalks.GroupGLLayer("group", [gltfLayer], {
+            sceneConfig: {
+                environment: {
+                    enable: true,
+                    mode: 1,
+                    level: 0,
+                    brightness: 0,
+                },
+
+            },
+        }).addTo(map);
+
+        var api = { state: 'Walking', bloom: false, rotationZ: 0, controlEnable: false };
+        const gui = new dat.GUI();
+        gui.add(api, 'controlEnable').onChange(() => {
+            if (api.controlEnable) {
+                modelcontrol.enable();
+            } else {
+                modelcontrol.disable();
+            }
+        })
+
+        /**end**/
+    </script>
+</body>
+
+</html>

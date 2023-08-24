@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>model animation</title>
+    <script type="text/javascript" src="https://unpkg.com/dat.gui@0.7.6/build/dat.gui.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/maptalks/dist/maptalks.css">
+    <script type="text/javascript" src="https://unpkg.com/maptalks/dist/maptalks.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/@maptalks/gl/dist/maptalksgl.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/three@0.138.0/build/three.min.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/three@0.138.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script type="text/javascript" src="http://localhost/maptalks.three/dist/maptalks.three.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/three@0.138.0/examples/js/libs/stats.min.js"></script>
+    <script type="text/javascript" src="../dist/maptalks.modelcontrol.js"></script>
+    <style>
+        html,
+        body {
+            margin: 0px;
+            height: 100%;
+            width: 100%;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+        }
+
+        .control-message {
+            background-color: black;
+            color: white;
+            padding: 4px;
+            display: block;
+            white-space: nowrap;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="map"></div>
+    <script>
+
+        var map = new maptalks.Map("map", {
+            center: [120.72401521, 31.05590736],
+            zoom: 16,
+            pitch: 60,
+            // bearing: 180,
+
+            centerCross: true,
+            doubleClickZoom: false,
+            baseLayer: new maptalks.TileLayer('tile', {
+                urlTemplate:
+                    'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                subdomains: ['a', 'b', 'c', 'd'],
+                attribution: '&copy; <a href="https://www.esri.com/en-us/home">esri</a>'
+            })
+        });
+
+        // the ThreeLayer to draw buildings
+        var threeLayer = new maptalks.ThreeLayer('t', {
+            forceRenderOnMoving: true,
+            forceRenderOnRotating: true
+            // animation: true
+        });
+        threeLayer.prepareToDraw = function (gl, scene, camera) {
+            var light = new THREE.DirectionalLight(0xffffff);
+            light.position.set(0, -10, 10).normalize();
+            scene.add(light);
+            camera.add(new THREE.PointLight('#fff', 4));
+            addGltf();
+
+        };
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                antialias: { enable: true },
+                bloom: {
+                    enable: true,
+                    threshold: 0,
+                    factor: 1,
+                    radius: 0.02,
+                },
+            }
+        };
+        const groupLayer = new maptalks.GroupGLLayer('group', [threeLayer], { sceneConfig, onlyWebGL1: true });
+        groupLayer.addTo(map);
+
+        const modelcontrol = new maptalks.ModelControl(map, {
+            lineSymbol: {
+                lineColor: '#fff'
+            },
+            scaleColor: 'red',
+            rotateColor: 'blue',
+            translateColor: 'green',
+            highLightColor: 'yellow',
+            opacity: 0.4,
+            panelSize: 300
+        });
+
+        const marker = new maptalks.ui.UIMarker([0, 0], {
+            content: 'hello',
+            dy: -40
+        });
+
+        function showTip(e) {
+            const { coordinate, type } = e;
+            if (!coordinate) {
+                marker.remove();
+                return;
+            }
+            let message = '';
+            if (type === 'translate_in') {
+                message = '平移';
+            } else if (type === 'scale_in') {
+                message = '缩放';
+            } else if (type === 'rotation_in') {
+                message = '旋转';
+            } else if (type === 'height_in') {
+                message = '调整高度'
+            }
+            const content = `你可以对模型进行${message}`;
+            marker.setContent(`<div class="control-message">${content}</div>`);
+            if (!marker.getMap()) {
+                marker.addTo(map);
+            }
+            marker.setCoordinates(coordinate);
+        }
+
+        modelcontrol.on('translate_in scale_in rotation_in height_in', showTip);
+        modelcontrol.on('translate_out scale_out rotation_out height_out', () => {
+            marker.remove();
+        });
+
+        function updateMeshPosition() {
+            const coordinate = baseObjectModel.options.coordinate;
+            const altitude = baseObjectModel.options.altitude;
+            const z = threeLayer.altitudeToVector3(altitude, altitude).x;
+            const v = threeLayer.coordinateToVector3(coordinate, z);
+            baseObjectModel.getObject3d().position.copy(v);
+        }
+
+        modelcontrol.on('translate scale rotation height', e => {
+            const { type } = e;
+            marker.remove();
+            if (type === 'translate') {
+                baseObjectModel.options.coordinate = e.coordinate;
+                updateMeshPosition();
+            }
+            if (type === 'scale') {
+                const scale = e.scale;
+                baseObjectModel.getObject3d().scale.set(scale, scale, scale);
+            }
+            if (type === 'rotation') {
+                const rotation = e.rotation / 180 * Math.PI;
+                baseObjectModel.getObject3d().rotation.z = rotation;
+            }
+            if (type === 'height') {
+                const height = e.height;
+                baseObjectModel.options.altitude = height;
+                updateMeshPosition();
+            }
+        })
+
+
+
+        var stats, clock, gui, mixer, actions, activeAction, previousAction;
+        var model, face, baseObjectModel;
+        var api = { state: 'Walking', bloom: false, rotationZ: 0, controlEnable: false };
+
+
+        function addGltf() {
+            clock = new THREE.Clock();
+            stats = new Stats();
+            map.getContainer().appendChild(stats.dom);
+            var loader = new THREE.GLTFLoader();
+            loader.load('./data/RobotExpressive.glb', function (gltf) {
+
+                model = gltf.scene;
+                model.rotation.x = Math.PI / 2;
+                model.scale.set(1, 1, 1);
+
+                baseObjectModel = threeLayer.toModel(model, { center: map.getCenter() });
+                threeLayer.addMesh(baseObjectModel);
+                createGUI(model, gltf.animations);
+                animate();
+                modelcontrol.setModel(baseObjectModel);
+                modelcontrol.setOriginalScale(baseObjectModel.getObject3d().scale.x);
+
+            }, undefined, function (e) {
+
+                console.error(e);
+
+            });
+        }
+
+
+        function createGUI(model, animations) {
+
+            var states = ['Idle', 'Walking', 'Running', 'Dance', 'Death', 'Sitting', 'Standing'];
+            var emotes = ['Jump', 'Yes', 'No', 'Wave', 'Punch', 'ThumbsUp'];
+
+            gui = new dat.GUI();
+
+            gui.add(api, 'controlEnable').onChange(() => {
+                if (api.controlEnable) {
+                    modelcontrol.enable();
+                } else {
+                    modelcontrol.disable();
+                }
+            })
+            // gui.add(api, 'bloom').onChange(() => {
+            //     baseObjectModel.options.bloom = api.bloom;
+            // });
+
+            mixer = new THREE.AnimationMixer(model);
+
+            actions = {};
+
+            for (var i = 0; i < animations.length; i++) {
+
+                var clip = animations[i];
+                var action = mixer.clipAction(clip);
+                actions[clip.name] = action;
+
+                if (emotes.indexOf(clip.name) >= 0 || states.indexOf(clip.name) >= 4) {
+
+                    action.clampWhenFinished = true;
+                    action.loop = THREE.LoopOnce;
+
+                }
+
+            }
+
+            // states
+
+            var statesFolder = gui.addFolder('States');
+
+            var clipCtrl = statesFolder.add(api, 'state').options(states);
+
+            clipCtrl.onChange(function () {
+
+                fadeToAction(api.state, 0.5);
+
+            });
+
+            statesFolder.open();
+
+            // emotes
+
+            var emoteFolder = gui.addFolder('Emotes');
+
+            function createEmoteCallback(name) {
+
+                api[name] = function () {
+
+                    fadeToAction(name, 0.2);
+
+                    mixer.addEventListener('finished', restoreState);
+
+                };
+
+                emoteFolder.add(api, name);
+
+            }
+
+            function restoreState() {
+
+                mixer.removeEventListener('finished', restoreState);
+
+                fadeToAction(api.state, 0.2);
+
+            }
+
+            for (var i = 0; i < emotes.length; i++) {
+
+                createEmoteCallback(emotes[i]);
+
+            }
+
+            emoteFolder.open();
+
+            // expressions
+
+            face = model.getObjectByName('Head_2');
+
+            var expressions = Object.keys(face.morphTargetDictionary);
+            var expressionFolder = gui.addFolder('Expressions');
+
+            for (var i = 0; i < expressions.length; i++) {
+
+                expressionFolder.add(face.morphTargetInfluences, i, 0, 1, 0.01).name(expressions[i]);
+
+            }
+
+            activeAction = actions['Walking'];
+            activeAction.play();
+
+            expressionFolder.open();
+
+        }
+
+        function fadeToAction(name, duration) {
+            previousAction = activeAction;
+            activeAction = actions[name];
+            if (previousAction !== activeAction) {
+                previousAction.fadeOut(duration);
+            }
+            activeAction
+                .reset()
+                .setEffectiveTimeScale(1)
+                .setEffectiveWeight(1)
+                .fadeIn(duration)
+                .play();
+
+        }
+
+        function animate() {
+            var dt = clock.getDelta();
+            if (mixer) mixer.update(dt);
+            requestAnimationFrame(animate);
+            stats.update();
+            // threeLayer._needsUpdate = !threeLayer._needsUpdate;
+            if (threeLayer._needsUpdate) {
+                threeLayer.redraw();
+            }
+
+        }
+
+
+
+    </script>
+</body>
+
+</html>
