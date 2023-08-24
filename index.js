@@ -379,10 +379,10 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
             // eslint-disable-next-line no-unused-vars
             const [c1, c2, p1, p2] = getPoints();
             const distance = p2.distanceTo(p1);
-            let scale = (distance / (panelSize / 2) - 1);
-            if (scale < 0) {
-                scale *= 2;
-            }
+            const scale = (distance / (panelSize / 2) - 1);
+            // if (scale < 0) {
+            //     scale *= 2;
+            // }
             const modelScale = orginScale + scale;
             this._setMarkerSize(panelSize * (distance * 2 / panelSize));
             c2.z = -height;
