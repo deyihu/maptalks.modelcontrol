@@ -90,6 +90,7 @@
         groupLayer.addTo(map);
 
         const modelcontrol = new maptalks.ModelControl(map, {
+            allowNegativeAltitude: true,
             lineSymbol: {
                 lineColor: '#fff'
             },
@@ -169,7 +170,7 @@
 
         var stats, clock, gui, mixer, actions, activeAction, previousAction;
         var model, face, baseObjectModel;
-        var api = { state: 'Walking', bloom: false, rotationZ: 0, controlEnable: false };
+        var api = { state: 'Walking', bloom: false, rotationZ: 0, controlEnable: false, allowNegativeAltitude: true };
 
 
         function addGltf() {
@@ -211,6 +212,9 @@
                 } else {
                     modelcontrol.disable();
                 }
+            });
+            gui.add(api, 'allowNegativeAltitude').onChange(() => {
+                modelcontrol.config({ allowNegativeAltitude: api.allowNegativeAltitude });
             })
             // gui.add(api, 'bloom').onChange(() => {
             //     baseObjectModel.options.bloom = api.bloom;

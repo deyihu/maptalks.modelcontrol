@@ -89,6 +89,7 @@
 
 
         const modelcontrol = new maptalks.ModelControl(map, {
+            allowNegativeAltitude: true,
             panelSize: 400,
             // rotationCursor:'url(data/rotation-cursor.svg) 13 13, auto',
             translateCursor: 'url(data/translate-cursor.svg) 13 13, auto',
@@ -163,7 +164,7 @@
             },
         }).addTo(map);
 
-        var api = { state: 'Walking', bloom: false, rotationZ: 0, controlEnable: false, model: '1' };
+        var api = { state: 'Walking', bloom: false, rotationZ: 0, controlEnable: false, model: '1', allowNegativeAltitude: true };
         const gui = new dat.GUI();
         gui.add(api, 'controlEnable').onChange(() => {
             if (api.controlEnable) {
@@ -171,6 +172,9 @@
             } else {
                 modelcontrol.disable();
             }
+        })
+        gui.add(api, 'allowNegativeAltitude').onChange(() => {
+            modelcontrol.config({ allowNegativeAltitude: api.allowNegativeAltitude });
         })
 
         gui.add(api, 'model', { 'model1': 1, 'model2': 2 }).onChange(switchModel)

@@ -1,4 +1,5 @@
 import * as maptalks from 'maptalks';
+const isNumber = maptalks.Util.isNumber;
 
 const options = {
     lineSymbol: {
@@ -14,7 +15,8 @@ const options = {
     translateCursor: 'move',
     heightCursor: 'row-resize',
     opacity: 0.4,
-    panelSize: 300
+    panelSize: 300,
+    allowNegativeAltitude: true
 };
 const HIGH_LIGHT = 'highlight';
 const HTMLTEMPLATE = `
@@ -126,8 +128,10 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
     }
 
     setOriginalScale(scale) {
-        if (maptalks.Util.isNumber(scale)) {
+        if (isNumber(scale)) {
             this.orginScale = scale;
+        } else {
+            console.warn(scale, 'is not number,will ignore this value');
         }
         return this;
     }
@@ -354,7 +358,7 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
             return;
         }
         const marker = this.uiMarker, layer = this.layer, map = this.map, height = this.height || 0;
-        const { panelSize, lineSymbol } = this.options;
+        const { panelSize, lineSymbol, allowNegativeAltitude } = this.options;
 
         const getPoints = () => {
             const c1 = marker.getCoordinates().copy();
@@ -435,7 +439,10 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
             const dy = (p2.y - p1.y);
             let result = dy * map.getScale() / 40;
             result = -result;
-            const modelHeight = this.height + result;
+            let modelHeight = this.height + result;
+            if (!allowNegativeAltitude) {
+                modelHeight = Math.max(0, modelHeight);
+            }
             this._tempHeight = modelHeight;
             const coordinate = this.uiMarker.getCoordinates();
             coordinate.z = modelHeight;
@@ -456,10 +463,10 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
         mapConfig(this.map, true);
         this.map.resetCursor();
         this.layer.clear();
-        if (this._tempScale) {
+        if (isNumber(this._tempScale)) {
             this.setOriginalScale(this._tempScale);
         }
-        if (this._tempHeight) {
+        if (isNumber(this._tempHeight)) {
             this.height = this._tempHeight;
         }
         this._mousedownPoint = null;
