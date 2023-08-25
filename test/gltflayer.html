@@ -78,7 +78,7 @@
         };
 
         const gltfLayer = new maptalks.GLTFLayer("gltf");
-        const gltfMarker1 = new maptalks.GLTFMarker(map.getCenter(), {
+        const gltfMarker1 = new maptalks.GLTFMarker(map.getCenter().add(-0.01, 0), {
             symbol,
         });
         gltfLayer.addGeometry(gltfMarker1);
