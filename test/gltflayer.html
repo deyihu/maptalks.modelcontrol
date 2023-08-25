@@ -62,11 +62,10 @@
                 },
             },
             baseLayer: new maptalks.TileLayer('tile', {
-                maxAvailableZoom: 17,
-                urlTemplate:
-                    'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-                subdomains: ['a', 'b', 'c', 'd'],
-                attribution: '&copy; <a href="https://www.esri.com/en-us/home">esri</a>'
+                maxAvailableZoom: 20,
+                urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                subdomains: ["a", "b", "c", "d"],
+                attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
             })
         });
 
@@ -89,6 +88,9 @@
 
 
         const modelcontrol = new maptalks.ModelControl(map, {
+            lineSymbol: {
+                lineColor: 'black'
+            },
             allowNegativeAltitude: true,
             panelSize: 400,
             // rotationCursor:'url(data/rotation-cursor.svg) 13 13, auto',
