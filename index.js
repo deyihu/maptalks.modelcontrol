@@ -120,7 +120,7 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
         this.orginScale = 1;
         this.highLightDoms = [];
         this.height = 0;
-        this._tempScale = 0;
+        this._tempScale = null;
         this._tempHeight = 0;
         this._mousedownPoint = null;
         this._enable = false;
@@ -170,7 +170,7 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
         this.layer.clear();
         this.layer.remove();
         this.height = 0;
-        this._tempScale = 0;
+        this._tempScale = null;
         this._tempHeight = 0;
         return this;
     }
@@ -463,7 +463,7 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
         mapConfig(this.map, true);
         this.map.resetCursor();
         this.layer.clear();
-        if (isNumber(this._tempScale)) {
+        if (isNumber(this._tempScale) && this._tempScale !== 0) {
             this.setOriginalScale(this._tempScale);
         }
         if (isNumber(this._tempHeight)) {
