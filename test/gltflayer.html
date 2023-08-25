@@ -85,7 +85,10 @@
 
 
         const modelcontrol = new maptalks.ModelControl(map, {
-            panelSize: 400
+            panelSize: 400,
+            // rotationCursor:'url(data/rotation-cursor.svg) 13 13, auto',
+            translateCursor:'url(data/translate-cursor.svg) 13 13, auto',
+            heightCursor:'url(data/height-cursor.svg) 13 13, auto',
         });
 
         const marker = new maptalks.ui.UIMarker([0, 0], {

@@ -9,6 +9,10 @@ const options = {
     translateColor: 'green',
     heightColor: '#2577E3',
     highLightColor: 'yellow',
+    scaleCursor: 'col-resize',
+    rotationCursor: 'grab',
+    translateCursor: 'move',
+    heightCursor: 'row-resize',
     opacity: 0.4,
     panelSize: 300
 };
@@ -218,6 +222,7 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
         const map = this.map;
         const dom = this.uiMarker.getDOM();
         const on = maptalks.DomUtil.on;
+        const { scaleCursor, translateCursor, rotationCursor, heightCursor } = this.options;
 
         const getChildDom = (selector) => {
             return dom.querySelector(selector);
@@ -230,7 +235,7 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
                 domShow(scaleHighLight);
                 if (!this.operateModel) {
                     this.operateModel = SCALE;
-                    map.setCursor('col-resize');
+                    map.setCursor(scaleCursor);
                 }
             }
         };
@@ -244,7 +249,7 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
                 domShow(rotationHighLight);
                 if (!this.operateModel) {
                     this.operateModel = ROTATION;
-                    map.setCursor('grab');
+                    map.setCursor(rotationCursor);
                 }
             }
         };
@@ -258,7 +263,7 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
                 domShow(translateHighLight);
                 if (!this.operateModel) {
                     this.operateModel = TRANSLATE;
-                    map.setCursor('move');
+                    map.setCursor(translateCursor);
                 }
             }
         };
@@ -272,7 +277,7 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
                 domShow(heightHighLight);
                 if (!this.operateModel) {
                     this.operateModel = HEIGHT;
-                    map.setCursor('row-resize');
+                    map.setCursor(heightCursor);
                 }
             }
         };
