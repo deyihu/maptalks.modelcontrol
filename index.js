@@ -114,15 +114,15 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
             zIndex: 1000,
             enableAltitude: true
         });
-        this._enable = false;
-        this._isDown = false;
         this.operateModel = '';
         this.orginScale = 1;
-        this._tempScale = null;
-        this.height = 0;
-        this._tempHeight = null;
-        this._mousedownPoint = null;
         this.highLightDoms = [];
+        this.height = 0;
+        this._tempScale = 0;
+        this._tempHeight = 0;
+        this._mousedownPoint = null;
+        this._enable = false;
+        this._isDown = false;
     }
 
     setOriginalScale(scale) {
@@ -165,7 +165,14 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
         this._enable = false;
         this.layer.clear();
         this.layer.remove();
+        this.height = 0;
+        this._tempScale = 0;
+        this._tempHeight = 0;
         return this;
+    }
+
+    isEnabled() {
+        return this._enable;
     }
 
     setModel(model) {

@@ -78,17 +78,21 @@
         };
 
         const gltfLayer = new maptalks.GLTFLayer("gltf");
-        const gltfMarker = new maptalks.GLTFMarker(map.getCenter(), {
+        const gltfMarker1 = new maptalks.GLTFMarker(map.getCenter(), {
             symbol,
         });
-        gltfLayer.addGeometry(gltfMarker);
+        gltfLayer.addGeometry(gltfMarker1);
+        const gltfMarker2 = new maptalks.GLTFMarker(map.getCenter().add(0.01, 0), {
+            symbol,
+        });
+        gltfLayer.addGeometry(gltfMarker2);
 
 
         const modelcontrol = new maptalks.ModelControl(map, {
             panelSize: 400,
             // rotationCursor:'url(data/rotation-cursor.svg) 13 13, auto',
-            translateCursor:'url(data/translate-cursor.svg) 13 13, auto',
-            heightCursor:'url(data/height-cursor.svg) 13 13, auto',
+            translateCursor: 'url(data/translate-cursor.svg) 13 13, auto',
+            heightCursor: 'url(data/height-cursor.svg) 13 13, auto',
         });
 
         const marker = new maptalks.ui.UIMarker([0, 0], {
@@ -124,33 +128,28 @@
         modelcontrol.on('translate_out scale_out rotation_out height_out', () => {
             marker.remove();
         });
+        let currentModel;
         modelcontrol.on('translate scale rotation height', e => {
             const { type } = e;
             marker.remove();
             if (type === 'translate') {
-                console.log(e.coordinate);
-                gltfMarker.setCoordinates(e.coordinate);
+                // console.log(e.coordinate);
+                currentModel.setCoordinates(e.coordinate);
             }
             if (type === 'scale') {
                 const scale = e.scale;
-                gltfMarker.setScale(scale, scale, scale)
+                currentModel.setScale(scale, scale, scale)
             }
             if (type === 'rotation') {
                 const rotation = e.rotation;
-                gltfMarker.setRotation(0, 0, rotation + 180);
+                currentModel.setRotation(0, 0, rotation + 180);
             }
             if (type === 'height') {
-                const coordinate = gltfMarker.getCoordinates();
+                const coordinate = currentModel.getCoordinates();
                 coordinate.z = e.height;
-                gltfMarker.setCoordinates(coordinate);
+                currentModel.setCoordinates(coordinate);
             }
         })
-
-        modelcontrol.setModel(gltfMarker);
-        modelcontrol.setOriginalScale(gltfMarker.getScale()[0]);
-
-
-
 
         const groupLayer = new maptalks.GroupGLLayer("group", [gltfLayer], {
             sceneConfig: {
@@ -164,7 +163,7 @@
             },
         }).addTo(map);
 
-        var api = { state: 'Walking', bloom: false, rotationZ: 0, controlEnable: false };
+        var api = { state: 'Walking', bloom: false, rotationZ: 0, controlEnable: false, model: '1' };
         const gui = new dat.GUI();
         gui.add(api, 'controlEnable').onChange(() => {
             if (api.controlEnable) {
@@ -173,6 +172,19 @@
                 modelcontrol.disable();
             }
         })
+
+        gui.add(api, 'model', { 'model1': 1, 'model2': 2 }).onChange(switchModel)
+
+        function switchModel() {
+            currentModel = api.model === '1' ? gltfMarker1 : gltfMarker2;
+            modelcontrol.setModel(currentModel);
+            console.log(currentModel.getScale()[0]);
+            modelcontrol.setOriginalScale(currentModel.getScale()[0]);
+            if (api.controlEnable) {
+                modelcontrol.enable();
+            }
+        }
+        switchModel();
 
         /**end**/
     </script>

@@ -66,12 +66,14 @@ modelcontrol.disable();
 
 - `disable()`
 
+- `isEnabled()`
+
 - `setModel(model)`  set current model 
 
 
 - `setTarget(model)` set current model ,Equivalent to `setModel`
 
-- `setOriginalScale(scale)` set modeo Initialized scaling factor 
+- `setOriginalScale(scale)` set model Initialized scaling factor 
 
 ```js
     //for GLTFMarker
