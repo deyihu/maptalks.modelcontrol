@@ -44,9 +44,14 @@ const modelcontrol = new ModelControl(map, {
     scaleColor: 'red',
     rotateColor: 'blue',
     translateColor: 'green',
+    heightColor:'white',
     highLightColor: 'yellow',
     opacity: 0.4,
-    panelSize: 300
+    panelSize: 300,
+    // scaleCursor:'',
+   // rotationCursor:'url(data/rotation-cursor.svg) 13 13, auto',
+    // translateCursor:'url(data/translate-cursor.svg) 13 13, auto',
+    // heightCursor:'url(data/height-cursor.svg) 13 13, auto',
 });
 //set selected model,model is GLTFMarker or maptalks.three BaseObject
 modelcontrol.setModel(baseObjectModel);
