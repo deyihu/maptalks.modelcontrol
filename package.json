@@ -1,6 +1,6 @@
 {
   "name": "maptalks.modelcontrol",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "maptalks model control",
   "main": "dist/maptalks.modelcontrol.js",
   "module": "./index.js",
