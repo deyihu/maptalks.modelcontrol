@@ -125,6 +125,7 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
         this._mousedownPoint = null;
         this._enable = false;
         this._isDown = false;
+        this._operated = false;
     }
 
     setOriginalScale(scale) {
@@ -438,6 +439,7 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
             createTipLine(c1, c2);
             this.fire(SCALE, Object.assign({}, e, { scale: modelScale }));
             this._tempScale = modelScale;
+            this._operated = true;
         }
         if (operateModel === ROTATION) {
             // eslint-disable-next-line no-unused-vars
@@ -473,6 +475,7 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
             layer.options.altitude = 0;
             createTipLine(c1, c2);
             this.fire(HEIGHT, Object.assign({}, e, { height: modelHeight }));
+            this._operated = true;
         }
     }
 
@@ -483,10 +486,10 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
         mapConfig(this.map, true);
         this.map.resetCursor();
         this.layer.clear();
-        if (isNumber(this._tempScale) && this._tempScale !== 0) {
+        if (isNumber(this._tempScale) && this._tempScale !== 0 && this._operated) {
             this.setOriginalScale(this._tempScale);
         }
-        if (isNumber(this._tempHeight)) {
+        if (isNumber(this._tempHeight) && this._operated) {
             this.height = this._tempHeight;
         }
         this._mousedownPoint = null;
@@ -494,6 +497,7 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
             domHide(dom);
         });
         this._fireOutEvent();
+        this._operated = false;
         return this;
     }
 
