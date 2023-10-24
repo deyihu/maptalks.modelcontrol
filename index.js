@@ -189,6 +189,26 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
         return this;
     }
 
+    getModel() {
+        return this.model;
+    }
+
+    getModelType() {
+        if (!this.model) {
+            return;
+        }
+        if (this.model.getObject3d) {
+            return 'threemodel';
+        }
+        if (this.model.setScales) {
+            return 'gltfmarekr';
+        }
+        if (this.model instanceof maptalks.Marker) {
+            return 'marker';
+        }
+        return 'others';
+    }
+
     setTarget(model) {
         return this.setModel(model);
     }
