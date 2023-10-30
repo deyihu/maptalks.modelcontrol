@@ -124,7 +124,11 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
         this._tempHeight = 0;
         this._mousedownPoint = null;
         this._enable = false;
-        this._isDown = false;
+        this.isDown = false;
+        this._initStates();
+    }
+
+    _initStates() {
         this._scaleChanged = false;
         this._heightChanged = false;
     }
@@ -174,6 +178,7 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
         this.height = 0;
         this._tempScale = null;
         this._tempHeight = 0;
+        this._initStates();
         return this;
     }
 
@@ -498,7 +503,7 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
             domHide(dom);
         });
         this._fireOutEvent();
-        this._operated = false;
+        this._initStates();
         return this;
     }
 
