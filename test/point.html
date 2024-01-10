@@ -53,6 +53,9 @@
         }).addTo(map);
 
         const point = new maptalks.Marker(map.getCenter(), {
+            symbol:{
+                markerFile:'./25998927.jfif'
+            }
 
         }).addTo(layer);
 
@@ -110,14 +113,14 @@
                 // console.log(e.coordinate);
                 currentModel.setCoordinates(e.coordinate);
             }
-            if (type === 'scale' && modelType === 'gltfmarker') {
-                const scale = e.scale;
-                currentModel.setScale(scale, scale, scale)
-            }
-            if (type === 'rotation' && modelType === 'gltfmarker') {
-                const rotation = e.rotation;
-                currentModel.setRotation(0, 0, rotation + 180);
-            }
+            // if (type === 'scale' && modelType === 'gltfmarker') {
+            //     const scale = e.scale;
+            //     currentModel.setScale(scale, scale, scale)
+            // }
+            // if (type === 'rotation' && modelType === 'gltfmarker') {
+            //     const rotation = e.rotation;
+            //     currentModel.setRotation(0, 0, rotation + 180);
+            // }
             if (type === 'height') {
                 const coordinate = currentModel.getCoordinates();
                 coordinate.z = e.height;

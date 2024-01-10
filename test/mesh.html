@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>model animation</title>
+    <script type="text/javascript" src="https://unpkg.com/dat.gui@0.7.6/build/dat.gui.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/maptalks/dist/maptalks.css">
+    <script type="text/javascript" src="https://unpkg.com/maptalks/dist/maptalks.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/@maptalks/gl/dist/maptalksgl.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/three@0.138.0/build/three.min.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/maptalks.three/dist/maptalks.three.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/three@0.138.0/examples/js/libs/stats.min.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/maptalks.modelcontrol/dist/maptalks.modelcontrol.js"></script>
+    <style>
+        html,
+        body {
+            margin: 0px;
+            height: 100%;
+            width: 100%;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+        }
+
+        .control-message {
+            background-color: black;
+            color: white;
+            padding: 4px;
+            display: block;
+            white-space: nowrap;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="map"></div>
+    <script>
+
+        var map = new maptalks.Map("map", {
+            center: [121.47088183, 31.17230435],
+            zoom: 16,
+            pitch: 60,
+            // bearing: 180,
+
+            centerCross: true,
+            doubleClickZoom: false,
+            baseLayer: new maptalks.TileLayer('tile', {
+                maxAvailableZoom: 20,
+                urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                subdomains: ["a", "b", "c", "d"],
+                attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
+            })
+        });
+
+        // the ThreeLayer to draw buildings
+        var threeLayer = new maptalks.ThreeLayer('t', {
+            forceRenderOnMoving: true,
+            forceRenderOnRotating: true
+            // animation: true
+        });
+        threeLayer.prepareToDraw = function (gl, scene, camera) {
+            var light = new THREE.DirectionalLight(0xffffff);
+            light.position.set(0, -10, 10).normalize();
+            scene.add(light);
+            camera.add(new THREE.PointLight('#fff', 0.5));
+            addBuilding();
+            createGUI();
+            animate();
+        };
+
+        let extrudePolygon;
+        const material = new THREE.MeshPhongMaterial({ color: '#fff' });
+
+        function polyFillForModelControl(baseObject) {
+            baseObject.getCoordinates = function () {
+                const coordinate = this.options.coordinate || this.getCenter();
+                const altitude = this.options.altitude;
+                const c = new maptalks.Coordinate(coordinate);
+                c.z = altitude;
+                return c;
+            }
+        }
+
+        function addBuilding() {
+            const feature = {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                        [
+                            [
+                                121.46991998433896,
+                                31.17272173610624
+                            ],
+                            [
+                                121.4703410385348,
+                                31.17289929192205
+                            ],
+                            [
+                                121.47053652798297,
+                                31.172896718651685
+                            ],
+                            [
+                                121.47065983671177,
+                                31.17287613248672
+                            ],
+                            [
+                                121.47118013939678,
+                                31.1720269492794
+                            ],
+                            [
+                                121.47049743009336,
+                                31.171767046230542
+                            ],
+                            [
+                                121.47049743009336,
+                                31.171774766133325
+                            ],
+                            [
+                                121.4704252493741,
+                                31.171882844706744
+                            ],
+                            [
+                                121.46991998433896,
+                                31.17272173610624
+                            ]
+                        ]
+                    ]
+                }
+            }
+
+            const polygon = maptalks.GeoJSON.toGeometry(feature);
+            extrudePolygon = threeLayer.toExtrudePolygon(polygon, { height: 100, topColor: '#fff', coordinate: polygon.getCenter() }, material);
+            polyFillForModelControl(extrudePolygon);
+            threeLayer.addMesh(extrudePolygon);
+        }
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                antialias: { enable: true },
+                bloom: {
+                    enable: true,
+                    threshold: 0,
+                    factor: 1,
+                    radius: 0.02,
+                },
+            }
+        };
+        const groupLayer = new maptalks.GroupGLLayer('group', [threeLayer], { sceneConfig });
+        groupLayer.addTo(map);
+
+        const modelcontrol = new maptalks.ModelControl(map, {
+            allowNegativeAltitude: true,
+            lineSymbol: {
+                lineColor: 'white'
+            },
+            scaleColor: 'red',
+            rotateColor: 'blue',
+            translateColor: 'green',
+            highLightColor: 'yellow',
+            opacity: 0.4,
+            panelSize: 300
+        });
+
+        const marker = new maptalks.ui.UIMarker([0, 0], {
+            content: 'hello',
+            dy: -40
+        });
+
+        function showTip(e) {
+            const { coordinate, type } = e;
+            if (!coordinate) {
+                marker.remove();
+                return;
+            }
+            let message = '';
+            if (type === 'translate_in') {
+                message = '平移';
+            } else if (type === 'scale_in') {
+                message = '缩放';
+            } else if (type === 'rotation_in') {
+                message = '旋转';
+            } else if (type === 'height_in') {
+                message = '调整高度'
+            }
+            const content = `你可以对模型进行${message}`;
+            marker.setContent(`<div class="control-message">${content}</div>`);
+            if (!marker.getMap()) {
+                marker.addTo(map);
+            }
+            marker.setCoordinates(coordinate);
+        }
+
+        modelcontrol.on('translate_in scale_in rotation_in height_in', showTip);
+        modelcontrol.on('translate_out scale_out rotation_out height_out', () => {
+            marker.remove();
+        });
+
+        function updateMeshPosition(baseObjectModel) {
+            const coordinate = baseObjectModel.options.coordinate;
+            const altitude = baseObjectModel.options.altitude;
+            const z = threeLayer.altitudeToVector3(altitude, altitude).x;
+            const v = threeLayer.coordinateToVector3(coordinate, z);
+            baseObjectModel.getObject3d().position.copy(v);
+        }
+
+        modelcontrol.on('translate scale rotation height', e => {
+            const { type } = e;
+            marker.remove();
+            baseObjectModel = modelcontrol.getModel();
+            if (type === 'translate') {
+                baseObjectModel.options.coordinate = e.coordinate;
+                updateMeshPosition(baseObjectModel);
+            }
+            if (type === 'scale') {
+                const scale = e.scale;
+                baseObjectModel.getObject3d().scale.set(scale, scale, scale);
+            }
+            if (type === 'rotation') {
+                const rotation = e.rotation / 180 * Math.PI;
+                baseObjectModel.getObject3d().rotation.z = rotation;
+            }
+            if (type === 'height') {
+                const height = e.height;
+                baseObjectModel.options.altitude = height;
+                updateMeshPosition(baseObjectModel);
+            }
+        })
+
+
+
+        var api = { controlEnable: false, allowNegativeAltitude: true };
+
+        function createGUI() {
+            gui = new dat.GUI();
+
+            gui.add(api, 'controlEnable').onChange(() => {
+                if (api.controlEnable) {
+                    modelcontrol.setModel(extrudePolygon);
+                    modelcontrol.setOriginalScale(extrudePolygon.getObject3d().scale.x);
+                    modelcontrol.enable();
+                } else {
+                    modelcontrol.disable();
+                }
+            });
+            gui.add(api, 'allowNegativeAltitude').onChange(() => {
+                modelcontrol.config({ allowNegativeAltitude: api.allowNegativeAltitude });
+            })
+
+        }
+
+        function animate() {
+            if (threeLayer._needsUpdate) {
+                threeLayer.redraw();
+            }
+            requestAnimationFrame(animate);
+
+        }
+
+
+
+    </script>
+</body>
+
+</html>
