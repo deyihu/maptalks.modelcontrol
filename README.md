@@ -28,6 +28,8 @@ npm i maptalks.modelcontrol
 
 * [maptalks.three Model](https://deyihu.github.io/maptalks.modelcontrol/test/threelayer.html)
 * [maptalks GLTFMarker](https://deyihu.github.io/maptalks.modelcontrol/test/gltflayer.html)
+* [maptalks Geometry Marker](https://deyihu.github.io/maptalks.modelcontrol/test/point.html)
+* [maptalks.three BaseObject](https://deyihu.github.io/maptalks.modelcontrol/test/mesh.html)
 
 ## API
 
