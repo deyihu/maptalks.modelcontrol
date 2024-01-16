@@ -85,7 +85,7 @@
                 },
             }
         };
-        const groupLayer = new maptalks.GroupGLLayer('group', [threeLayer], { sceneConfig, onlyWebGL1: true });
+        const groupLayer = new maptalks.GroupGLLayer('group', [threeLayer], { sceneConfig });
         groupLayer.addTo(map);
 
         const modelcontrol = new maptalks.ModelControl(map, {
