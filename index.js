@@ -108,6 +108,7 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
     constructor(map, options = {}) {
         super(options);
         this.map = map;
+        this.model = null;
         this.uiMarker = null;
         this.layer = new maptalks.VectorLayer('___layer___', {
             geometryEvents: false,
@@ -142,6 +143,10 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
     }
 
     enable(coordinates) {
+        if (!coordinates && !this.model) {
+            console.warn('not find model data,please setModel(model)');
+            return this;
+        }
         if (this._enable) {
             return this;
         }
@@ -181,10 +186,45 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
         return this._enable;
     }
 
+    setModel(model) {
+        if (model.getCoordinates && model.on) {
+            this.model = model;
+            this.disable();
+        } else {
+            console.error(model, 'is error ,only support Geometry');
+        }
+        return this;
+    }
+
+    getModel() {
+        return this.model;
+    }
+
+    getModelType() {
+        if (!this.model) {
+            return;
+        }
+        if (this.model.getObject3d) {
+            return 'threemodel';
+        }
+        if (this.model.setScales) {
+            return 'gltfmarekr';
+        }
+        if (this.model instanceof maptalks.Marker) {
+            return 'marker';
+        }
+        return 'others';
+    }
+
+    setTarget(model) {
+        return this.setModel(model);
+    }
+
     _createMarker(coordinate) {
         if (this.uiMarker) {
             return this;
         }
+        coordinate = coordinate || this.model.getCoordinates();
         const height = coordinate.z || 0;
         this.height = height;
         const marker = new maptalks.ui.UIMarker(coordinate, {
