@@ -68,7 +68,7 @@ modelcontrol.disable();
 
 ### methods
 
-* `enable()`
+* `enable(coordinates)` If you want to customize the coordinate points of the model, otherwise the center point of the model will be used by default
 
 * `disable()`
 
