@@ -181,11 +181,10 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
         return this._enable;
     }
 
-    _createMarker(coordinates) {
+    _createMarker(coordinate) {
         if (this.uiMarker) {
             return this;
         }
-        const coordinate = coordinates;
         const height = coordinate.z || 0;
         this.height = height;
         const marker = new maptalks.ui.UIMarker(coordinate, {
