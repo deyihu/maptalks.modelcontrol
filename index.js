@@ -142,8 +142,8 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
         return this;
     }
 
-    enable() {
-        if (!this.model) {
+    enable(coordinates) {
+        if (!coordinates && !this.model) {
             console.warn('not find model data,please setModel(model)');
             return this;
         }
@@ -157,7 +157,7 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
         this.map.on(MOUSE_MOVE_EVENT, this._mouseMove, this);
         this.map.on(MOUSE_UP_EVENT, this._mouseUp, this);
         this.map.on(MOUSE_DOWN_EVENT, this._mouseDown, this);
-        this._createMarker();
+        this._createMarker(coordinates);
         this.layer.addTo(this.map);
         return this;
     }
@@ -220,11 +220,11 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
         return this.setModel(model);
     }
 
-    _createMarker() {
+    _createMarker(coordinate) {
         if (this.uiMarker) {
             return this;
         }
-        const coordinate = this.model.getCoordinates();
+        coordinate = coordinate || this.model.getCoordinates();
         const height = coordinate.z || 0;
         this.height = height;
         const marker = new maptalks.ui.UIMarker(coordinate, {
