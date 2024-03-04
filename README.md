@@ -30,6 +30,7 @@ npm i maptalks.modelcontrol
 * [maptalks GLTFMarker](https://deyihu.github.io/maptalks.modelcontrol/test/gltflayer.html)
 * [maptalks Geometry Marker](https://deyihu.github.io/maptalks.modelcontrol/test/point.html)
 * [maptalks.three BaseObject](https://deyihu.github.io/maptalks.modelcontrol/test/mesh.html)
+* [extrudepolygonlayer](https://deyihu.github.io/maptalks.modelcontrol/test/extrudepolygonlayer.html)
 
 ## API
 
