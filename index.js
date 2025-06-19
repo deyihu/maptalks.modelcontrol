@@ -110,7 +110,7 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
         this.map = map;
         this.model = null;
         this.uiMarker = null;
-        this.layer = new maptalks.VectorLayer('___layer___', {
+        this.layer = new maptalks.VectorLayer('___layer___' + maptalks.Util.GUID(), {
             geometryEvents: false,
             hitDetect: false,
             zIndex: 1000,
